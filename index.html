@@ -1,36 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stealth Chat AI</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="app-container">
-        <aside class="sidebar">
-            <h1 class="logo">STEALTH</h1>
-            <div class="settings-group">
+<div class="app-container">
+    <aside class="sidebar">
+        <h1 class="logo">STEALTH</h1>
+        <nav>
+            <button onclick="showTab('home')" class="nav-btn active" id="btn-home">🏠 HOME</button>
+            <button onclick="showTab('history')" class="nav-btn" id="btn-history">📜 HISTORY</button>
+            <button onclick="showTab('settings')" class="nav-btn" id="btn-settings">⚙️ SETTINGS</button>
+        </nav>
+        <div class="status-bar">● <span id="status">READY</span></div>
+    </aside>
+
+    <main class="content">
+        <section id="home-tab" class="tab-content">
+            <div id="chat-window"></div>
+            <div class="input-area">
+                <textarea id="user-input" placeholder="Type message..."></textarea>
+                <button onclick="sendMessage()" class="accent-btn">SEND</button>
+            </div>
+        </section>
+
+        <section id="history-tab" class="tab-content hidden">
+            <div class="header-row">
+                <h2>SESSION HISTORY</h2>
+                <button onclick="clearHistory()" class="danger-btn">CLEAR ALL</button>
+            </div>
+            <div id="history-list"></div>
+        </section>
+
+        <section id="settings-tab" class="tab-content hidden">
+            <h2>SYSTEM CONFIGURATION</h2>
+            
+            <div class="setting-item">
                 <label>OPENROUTER API KEY</label>
                 <input type="password" id="api-key" placeholder="sk-or-v1-...">
-                <button onclick="saveSettings()" class="save-btn">SAVE KEY</button>
             </div>
-            <div class="info">
-                <p>Status: <span id="status">Ready</span></p>
-            </div>
-        </aside>
 
-        <main class="chat-section">
-            <div id="chat-window" class="chat-window">
-                <div class="msg system">Welcome back. System online.</div>
+            <div class="setting-item">
+                <label>ACTIVE MODEL</label>
+                <select id="model-select">
+                    <option value="openrouter/free">OpenRouter Free (Default)</option>
+                    <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    <option value="anthropic/claude-3-haiku">Claude 3 Haiku</option>
+                    <option value="google/gemini-pro-1.5">Gemini Pro 1.5</option>
+                </select>
             </div>
-            
-            <div class="input-area">
-                <textarea id="user-input" placeholder="Type a message..." rows="1"></textarea>
-                <button id="send-btn" onclick="sendMessage()">SEND</button>
+
+            <div class="setting-item">
+                <label>THEME ENGINE</label>
+                <select id="theme-select" onchange="changeTheme(this.value)">
+                    <option value="Stealth Purple">Stealth Purple</option>
+                    <option value="Cyber Blue">Cyber Blue</option>
+                    <option value="Monochrome">Monochrome</option>
+                </select>
             </div>
-        </main>
-    </div>
-    <script src="script.js"></script>
-</body>
-</html>
+
+            <button onclick="saveSettings()" class="accent-btn" style="margin-top: 20px;">SAVE & APPLY</button>
+        </section>
+    </main>
+</div>
