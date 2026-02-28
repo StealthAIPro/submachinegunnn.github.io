@@ -1,4 +1,7 @@
 {
+  "name": "stealth-pro-v7",
+  "version": "1.0.0",
+  "type": "module",
   "dependencies": {
     "@ai-sdk/openai": "latest",
     "ai": "latest"
