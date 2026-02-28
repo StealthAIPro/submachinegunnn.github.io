@@ -3,54 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Stealth Pro</title>
+    <title>Stealth Pro | v3.0</title>
     <style>
-        :root {
-            --accent: #A020F0;
-            --bg: #0B0B0B;
-            --card: #121212;
-            --text: #D1D1D1;
-            --code-bg: #1e1e1e;
-        }
-
+        :root { --accent: #A020F0; --bg: #0B0B0B; --card: #121212; --text: #D1D1D1; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100dvh;
-            padding-bottom: env(safe-area-inset-bottom);
-            overflow: hidden;
+            background-color: var(--bg); color: var(--text);
+            font-family: -apple-system, system-ui, sans-serif;
+            margin: 0; display: flex; flex-direction: column; height: 100dvh;
+            padding-bottom: env(safe-area-inset-bottom); overflow: hidden;
         }
 
+        /* --- AUTH OVERLAY --- */
         #auth-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg); z-index: 1000; display: flex;
+            background: var(--bg); z-index: 9999; display: flex;
             flex-direction: column; justify-content: center; align-items: center;
         }
         .auth-card { background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #333; width: 90%; max-width: 350px; text-align: center; }
 
         header {
-            background: var(--card);
-            border-bottom: 1px solid #222;
-            display: flex; justify-content: space-between;
-            align-items: center; padding: 10px 20px; flex-shrink: 0;
+            background: var(--card); border-bottom: 1px solid #222;
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 10px 20px; flex-shrink: 0;
         }
-
         .logo { color: var(--accent); font-weight: bold; letter-spacing: 2px; }
-        .pro-badge { 
-            background: linear-gradient(45deg, var(--accent), #ff00ff);
-            font-size: 10px; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 5px;
-        }
+        .pro-badge { background: linear-gradient(45deg, var(--accent), #ff00ff); font-size: 10px; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
 
-        nav button {
-            background: transparent; border: 1px solid transparent;
-            color: var(--text); padding: 8px 12px; cursor: pointer; border-radius: 6px; font-size: 1.2rem;
-        }
+        nav button { background: transparent; border: 1px solid transparent; color: var(--text); padding: 8px 12px; cursor: pointer; border-radius: 6px; font-size: 1.2rem; }
         nav button.active { border-color: var(--accent); color: var(--accent); background: rgba(160, 32, 240, 0.1); }
 
         main { flex: 1; display: flex; flex-direction: column; padding: 10px 15px; overflow: hidden; min-height: 0; }
@@ -62,14 +43,8 @@
         .user { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 2px; }
         .ai { align-self: flex-start; background: var(--card); border: 1px solid #333; border-bottom-left-radius: 2px; width: 100%; }
 
-        .input-wrapper {
-            background: var(--card); padding: 10px; border-radius: 12px; border: 1px solid #333;
-            display: flex; gap: 8px; flex-shrink: 0; margin-bottom: 10px;
-        }
-        textarea {
-            flex: 1; background: transparent; border: none; color: white; 
-            outline: none; font-size: 16px; resize: none; padding: 8px 0; font-family: inherit;
-        }
+        .input-wrapper { background: var(--card); padding: 10px; border-radius: 12px; border: 1px solid #333; display: flex; gap: 8px; flex-shrink: 0; margin-bottom: 10px; }
+        textarea { flex: 1; background: transparent; border: none; color: white; outline: none; font-size: 16px; resize: none; padding: 8px 0; font-family: inherit; }
 
         .setting-group { background: var(--card); padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 3px solid var(--accent); }
         label { font-size: 10px; color: var(--accent); font-weight: bold; display: block; margin-bottom: 5px; }
@@ -85,8 +60,9 @@
 <div id="auth-overlay">
     <div class="auth-card">
         <div class="logo" style="font-size: 24px; margin-bottom: 20px;">STEALTH <span class="pro-badge">AUTH</span></div>
-        <input type="text" id="username-input" placeholder="Username" style="margin-bottom: 10px; width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px;">
+        <input type="text" id="username-input" placeholder="Enter Username" style="margin-bottom: 10px; width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px;">
         <button class="send-btn" style="width: 100%; height: 45px;" onclick="handleLogin()">LOGIN</button>
+        <p style="font-size: 10px; color: #444; margin-top: 15px; cursor: pointer;" onclick="document.getElementById('auth-overlay').style.display='none'">Bypass (Emergency Only)</p>
     </div>
 </div>
 
@@ -102,128 +78,91 @@
 <main>
     <section id="tab-home" class="tab-content">
         <div id="chat-window"></div>
-        <div id="loading" style="display:none; color:var(--accent); font-size:10px; margin-bottom:5px;">SECURE CONNECTION...</div>
+        <div id="loading" style="display:none; color:var(--accent); font-size:10px; margin-bottom:5px;">DECRYPTING SIGNAL...</div>
         <div class="input-wrapper">
-            <textarea id="user-input" rows="1" placeholder="Type a message..."></textarea>
+            <textarea id="user-input" rows="1" placeholder="Type message..."></textarea>
             <button class="send-btn" onclick="handleSend()">SEND</button>
         </div>
     </section>
 
     <section id="tab-history" class="tab-content hidden">
-        <h3 style="margin:0 0 15px 0">HISTORY</h3>
+        <h3 style="margin:0 0 15px 0">LOGS</h3>
         <div id="history-list" style="overflow-y:auto; flex:1;"></div>
     </section>
 
     <section id="tab-settings" class="tab-content hidden">
-        <h3>PROFILE: @<span id="display-user"></span></h3>
+        <h3>@<span id="display-user">Guest</span></h3>
         <div class="setting-group">
-            <label>OPENROUTER API KEY</label>
+            <label>API KEY</label>
             <input type="password" id="api-key-input">
         </div>
         <div class="setting-group">
-            <label>ACTIVE MODEL ID</label>
+            <label>MODEL ID</label>
             <input type="text" id="model-input">
-            <button class="status-btn" onclick="checkStatus()">🔍 CHECK API STATUS</button>
+            <button class="status-btn" id="status-btn" onclick="checkStatus()">🔍 TEST CONNECTION</button>
         </div>
         <button class="send-btn" style="width:100%; height:45px;" onclick="saveSettings()">SAVE CONFIG</button>
-        <button class="danger-btn" onclick="logout()">LOGOUT</button>
+        <button class="danger-btn" onclick="logout()">LOGOUT / RESET</button>
     </section>
 </main>
 
 <script>
-    // Updated Key with your new value
-    // This is the Base64 version of the key you provided
+    // YOUR NEW KEY
     const _v = "c2stLW9yLXYxLTllMjQ4MTk5Y2VjNjBiZDk1Mjg2OWNmNzU2Y2M2M2FhNWNiZjhjMzFlODRkMGQxY2QyODk3ZWNjZGQxYjRmMWQ=";
-
-    const getSecret = () => {
-        try {
-            return atob(_v).trim();
-        } catch (e) {
-            console.error("Key decoding failed");
-            return "";
-        }
-    };
-
-// ... inside your handleLogin function ...
-    const data = JSON.parse(localStorage.getItem(`stealth_data_${user}`)) || {
-        config: { 
-            apiKey: getSecret(), // This ensures the new key is used for new users
-            model: 'openrouter/free' 
-        },
-        history: []
-    };
+    const getSecret = () => { try { return atob(_v).trim(); } catch(e) { return ""; } };
 
     let currentUser = localStorage.getItem('stealth_last_user') || null;
     let activeConfig = null;
     let activeHistory = [];
 
-    window.onload = () => {
-        if (currentUser) handleLogin(currentUser);
-        document.getElementById('user-input').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-            }
-        });
-    };
-
+    // Login Logic
     function handleLogin(savedUser = null) {
-        const user = savedUser || document.getElementById('username-input').value.trim().toLowerCase();
-        if (!user) return;
+        const input = document.getElementById('username-input');
+        const user = savedUser || input.value.trim().toLowerCase();
+        
+        if (!user && !savedUser) return;
+
         currentUser = user;
         localStorage.setItem('stealth_last_user', user);
         document.getElementById('auth-overlay').style.display = 'none';
         document.getElementById('display-user').innerText = user;
-        const data = JSON.parse(localStorage.getItem(`stealth_data_${user}`)) || {
-            config: { apiKey: getSecret(), model: 'openrouter/free' },
+
+        const raw = localStorage.getItem(`stealth_v3_${user}`);
+        const data = raw ? JSON.parse(raw) : {
+            config: { apiKey: getSecret(), model: 'google/gemini-2.0-flash-lite-preview-02-05:free' },
             history: []
         };
+
         activeConfig = data.config;
         activeHistory = data.history;
+
         document.getElementById('api-key-input').value = activeConfig.apiKey;
         document.getElementById('model-input').value = activeConfig.model;
     }
 
+    // Status Checker
     async function checkStatus() {
+        const btn = document.getElementById('status-btn');
         const key = document.getElementById('api-key-input').value;
-        const btn = event.target;
-        btn.innerText = "⏳ VERIFYING...";
+        btn.innerText = "VERIFYING...";
+        
         try {
             const res = await fetch("https://openrouter.ai/api/v1/auth/key", {
                 method: "GET",
-                headers: { "Authorization": `Bearer ${key}` }
+                headers: { "Authorization": `Bearer ${key.trim()}` }
             });
             const data = await res.json();
             if (data.data) {
-                btn.innerText = `✅ ACTIVE (Usage: $${data.data.usage.toFixed(2)})`;
-                btn.style.color = "#00ff00";
+                btn.innerText = `✅ ONLINE ($${data.data.usage.toFixed(2)} USED)`;
                 btn.style.borderColor = "#00ff00";
             } else { throw new Error(); }
-        } catch {
-            btn.innerText = "❌ INVALID KEY OR NO CONNECTION";
-            btn.style.color = "#ff5555";
+        } catch (e) {
+            btn.innerText = "❌ KEY INVALID OR NO CREDITS";
             btn.style.borderColor = "#ff5555";
         }
     }
 
-    function saveToStorage() {
-        if (!currentUser) return;
-        localStorage.setItem(`stealth_data_${currentUser}`, JSON.stringify({
-            config: activeConfig,
-            history: activeHistory
-        }));
-    }
-
-    function showTab(name) {
-        ['home', 'history', 'settings'].forEach(t => {
-            document.getElementById(`tab-${t}`).classList.add('hidden');
-            document.getElementById(`nav-${t}`).classList.remove('active');
-        });
-        document.getElementById(`tab-${name}`).classList.remove('hidden');
-        document.getElementById(`nav-${name}`).classList.add('active');
-        if(name === 'history') renderHistory();
-    }
-
+    // Chat Logic
     async function handleSend() {
         const input = document.getElementById('user-input');
         const text = input.value.trim();
@@ -241,10 +180,7 @@
                     "Content-Type": "application/json",
                     "HTTP-Referer": "http://localhost:3000"
                 },
-                body: JSON.stringify({ 
-                    model: activeConfig.model, 
-                    messages: [{ role: "user", content: text }] 
-                })
+                body: JSON.stringify({ model: activeConfig.model, messages: [{ role: "user", content: text }] })
             });
             const data = await response.json();
             if (data.error) {
@@ -255,11 +191,7 @@
                 activeHistory.unshift({ user: text, ai: reply, time: new Date().toLocaleTimeString() });
                 saveToStorage();
             }
-        } catch (e) {
-            appendMsg('ai', "❌ **Connection Lost.** Check key or internet.");
-        } finally {
-            document.getElementById('loading').style.display = 'none';
-        }
+        } catch (e) { appendMsg('ai', "❌ **Signal Lost.**"); } finally { document.getElementById('loading').style.display = 'none'; }
     }
 
     function appendMsg(sender, text) {
@@ -271,20 +203,28 @@
         win.scrollTop = win.scrollHeight;
     }
 
+    function saveToStorage() {
+        if (currentUser) localStorage.setItem(`stealth_v3_${currentUser}`, JSON.stringify({ config: activeConfig, history: activeHistory }));
+    }
+
+    function showTab(name) {
+        ['home', 'history', 'settings'].forEach(t => {
+            document.getElementById(`tab-${t}`).classList.add('hidden');
+            document.getElementById(`nav-${t}`).classList.remove('active');
+        });
+        document.getElementById(`tab-${name}`).classList.remove('hidden');
+        document.getElementById(`nav-${name}`).classList.add('active');
+        if(name === 'history') renderHistory();
+    }
+
     function renderHistory() {
         const list = document.getElementById('history-list');
-        list.innerHTML = activeHistory.length === 0 ? '<p style="text-align:center; opacity:0.4;">Logs empty.</p>' : '';
+        list.innerHTML = activeHistory.length === 0 ? '<p style="text-align:center; opacity:0.4;">No logs.</p>' : '';
         activeHistory.forEach(item => {
             const div = document.createElement('div');
             div.style.cssText = "background:var(--card); padding:12px; border-radius:8px; margin-bottom:10px; border:1px solid #222; cursor:pointer;";
             div.innerHTML = `<small style="color:var(--accent)">${item.time}</small><br><b>Q:</b> ${item.user.substring(0,40)}...`;
-            div.onclick = () => {
-                const win = document.getElementById('chat-window');
-                win.innerHTML = '';
-                appendMsg('user', item.user);
-                appendMsg('ai', item.ai);
-                showTab('home');
-            };
+            div.onclick = () => { document.getElementById('chat-window').innerHTML = ''; appendMsg('user', item.user); appendMsg('ai', item.ai); showTab('home'); };
             list.appendChild(div);
         });
     }
@@ -293,13 +233,14 @@
         activeConfig.apiKey = document.getElementById('api-key-input').value;
         activeConfig.model = document.getElementById('model-input').value;
         saveToStorage();
-        alert("Config Saved.");
+        alert("Config Updated.");
     }
 
-    function logout() {
-        localStorage.removeItem('stealth_last_user');
-        location.reload();
-    }
+    function logout() { localStorage.removeItem('stealth_last_user'); location.reload(); }
+
+    // Init
+    if (currentUser) handleLogin(currentUser);
+    document.getElementById('user-input').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
 </script>
 </body>
 </html>
