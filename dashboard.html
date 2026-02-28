@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stealth OS | Dashboard</title>
+    <style>
+        :root {
+            --bg: #050505;
+            --panel: #111111;
+            --accent: #A020F0; /* Purple accent */
+            --text: #ffffff;
+            --subtext: #888;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid #222;
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .card:hover {
+            border-color: var(--accent);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(160, 32, 240, 0.1);
+        }
+
+        .card h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card p {
+            color: var(--subtext);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+
+        .status {
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .online { color: #00ff88; }
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #00ff88;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .icon { font-size: 2rem; margin-bottom: 10px; }
+
+        .header {
+            grid-column: 1 / -1;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .header h1 { font-size: 2.5rem; margin: 0; letter-spacing: -1px; }
+        .header span { color: var(--accent); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>STEALTH<span>PRO</span></h1>
+        <p style="color: var(--subtext);">System initialized. All modules operational.</p>
+    </div>
+
+    <a href="ai.html" class="card">
+        <div class="icon">🤖</div>
+        <h2>Neural AI</h2>
+        <p>Access the private Llama 4 / Gemini interface. Zero logs, full context.</p>
+        <div class="status online"><div class="pulse"></div> Operational</div>
+    </a>
+
+    <a href="https://your-render-proxy.onrender.com" target="_blank" class="card">
+        <div class="icon">🌐</div>
+        <h2>Web Proxy</h2>
+        <p>Encrypted tunneling via Render. Bypass filters and browse securely.</p>
+        <div class="status" id="proxy-status" style="color: #ffaa00;">Checking...</div>
+    </a>
+
+    <a href="music.html" class="card">
+        <div class="icon">🎵</div>
+        <h2>Audio Stream</h2>
+        <p>Private music player and YouTube bridge. Background play enabled.</p>
+        <div class="status online"><div class="pulse"></div> Ready</div>
+    </a>
+
+    <div class="card" onclick="alert('System Settings Locked')">
+        <div class="icon">⚙️</div>
+        <h2>Core System</h2>
+        <p>Configure API endpoints, clear local history, and manage panic keys.</p>
+        <div class="status" style="color: var(--subtext);">Encrypted</div>
+    </div>
+</div>
+
+<script>
+    // Simple Ping to check if Render Proxy is awake
+    async function checkProxy() {
+        const proxyUrl = "https://stealthaipro.onrender.com"; 
+        const statusEl = document.getElementById('proxy-status');
+        
+        try {
+            // Use no-cors to avoid blocking while checking if server is up
+            await fetch(proxyUrl, { mode: 'no-cors' });
+            statusEl.innerHTML = '<div class="pulse"></div> Online';
+            statusEl.style.color = "#00ff88";
+        } catch (e) {
+            statusEl.innerText = "Sleeping (Wake on Click)";
+            statusEl.style.color = "#ffaa00";
+        }
+    }
+
+    checkProxy();
+</script>
+
+</body>
+</html>
