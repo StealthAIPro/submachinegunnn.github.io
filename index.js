@@ -1,32 +1,46 @@
 import express from 'express';
+import { createServer } from 'node:http';
+import { uvPath } from '@titaniumnetwork-dev/ultraviolet';
+import { createBareServer } from '@tomphttp/bare-server-node';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createServer } from 'node:http';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const bare = createBareServer('/bare/');
 const app = express();
-const server = createServer(app);
-const PORT = process.env.PORT || 3000;
+const server = createServer();
 
-// Serve all static files (CSS, JS, Images)
+// 1. Serve static files (your a.html, m.html, p.html, etc.)
 app.use(express.static(__dirname));
 
-// Route Logic
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dashboard.html'));
+// 2. Serve Ultraviolet scripts (needed for p.html to work)
+app.use('/uv/', express.static(uvPath));
+
+// 3. Routes for your shortened files
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'dashboard.html')));
+app.get('/a', (req, res) => res.sendFile(path.join(__dirname, 'a.html')));
+app.get('/m', (req, res) => res.sendFile(path.join(__dirname, 'm.html')));
+app.get('/p', (req, res) => res.sendFile(path.join(__dirname, 'p.html')));
+app.get('/s', (req, res) => res.sendFile(path.join(__dirname, 's.html')));
+
+// 4. Integrate the Bare Server for the proxy
+server.on('request', (req, res) => {
+    if (bare.shouldRoute(req)) {
+        bare.routeRequest(req, res);
+    } else {
+        app(req, res);
+    }
 });
 
-// Map your shortened names for easy access
-app.get('/a', (req, res) => res.sendFile(path.join(__dirname, 'a.html'))); // AI
-app.get('/m', (req, res) => res.sendFile(path.join(__dirname, 'm.html'))); // Music
-app.get('/p', (req, res) => res.sendFile(path.join(__dirname, 'p.html'))); // Proxy
-app.get('/s', (req, res) => res.sendFile(path.join(__dirname, 's.html'))); // Settings
-
-// Error handling to keep the server from crashing
-app.use((req, res) => {
-    res.status(404).sendFile(path.join(__dirname, 'dashboard.html'));
+server.on('upgrade', (req, socket, head) => {
+    if (bare.shouldRoute(req)) {
+        bare.routeUpgrade(req, socket, head);
+    } else {
+        socket.end();
+    }
 });
 
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Stealth System Live on Port ${PORT}`);
+    console.log(`🚀 Stealth OS Running on Port ${PORT}`);
 });
