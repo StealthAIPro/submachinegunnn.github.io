@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Stealth Pro | v3.0</title>
+    <title>Stealth Pro | v3.1</title>
     <style>
         :root { --accent: #A020F0; --bg: #0B0B0B; --card: #121212; --text: #D1D1D1; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -15,7 +15,6 @@
             padding-bottom: env(safe-area-inset-bottom); overflow: hidden;
         }
 
-        /* --- AUTH OVERLAY --- */
         #auth-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg); z-index: 9999; display: flex;
@@ -51,7 +50,7 @@
         input { width: 100%; background: black; border: 1px solid #333; color: white; padding: 10px; border-radius: 6px; outline: none; }
         
         .send-btn { background: var(--accent); color: white; border: none; padding: 0 18px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .status-btn { background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 8px; border-radius: 6px; cursor: pointer; margin-top: 5px; font-size: 11px; width: 100%; }
+        .sub-btn { background: transparent; color: #888; border: 1px solid #333; padding: 8px; border-radius: 6px; cursor: pointer; margin-top: 5px; font-size: 11px; width: 100%; }
         .danger-btn { background: #222; color: #ff5555; border: 1px solid #441111; padding: 10px; border-radius: 8px; cursor: pointer; margin-top: 10px; width: 100%; }
     </style>
 </head>
@@ -60,9 +59,8 @@
 <div id="auth-overlay">
     <div class="auth-card">
         <div class="logo" style="font-size: 24px; margin-bottom: 20px;">STEALTH <span class="pro-badge">AUTH</span></div>
-        <input type="text" id="username-input" placeholder="Enter Username" style="margin-bottom: 10px; width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px;">
+        <input type="text" id="username-input" placeholder="Username" style="margin-bottom: 10px; width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px;">
         <button class="send-btn" style="width: 100%; height: 45px;" onclick="handleLogin()">LOGIN</button>
-        <p style="font-size: 10px; color: #444; margin-top: 15px; cursor: pointer;" onclick="document.getElementById('auth-overlay').style.display='none'">Bypass (Emergency Only)</p>
     </div>
 </div>
 
@@ -78,7 +76,7 @@
 <main>
     <section id="tab-home" class="tab-content">
         <div id="chat-window"></div>
-        <div id="loading" style="display:none; color:var(--accent); font-size:10px; margin-bottom:5px;">DECRYPTING SIGNAL...</div>
+        <div id="loading" style="display:none; color:var(--accent); font-size:10px; margin-bottom:5px;">DECRYPTING...</div>
         <div class="input-wrapper">
             <textarea id="user-input" rows="1" placeholder="Type message..."></textarea>
             <button class="send-btn" onclick="handleSend()">SEND</button>
@@ -95,19 +93,20 @@
         <div class="setting-group">
             <label>API KEY</label>
             <input type="password" id="api-key-input">
+            <button class="sub-btn" onclick="checkStatus()" id="status-btn">🔍 TEST CONNECTION</button>
         </div>
         <div class="setting-group">
             <label>MODEL ID</label>
             <input type="text" id="model-input">
-            <button class="status-btn" id="status-btn" onclick="checkStatus()">🔍 TEST CONNECTION</button>
         </div>
+        
         <button class="send-btn" style="width:100%; height:45px;" onclick="saveSettings()">SAVE CONFIG</button>
-        <button class="danger-btn" onclick="logout()">LOGOUT / RESET</button>
+        <button class="sub-btn" onclick="forceResetKey()">🔄 RESET TO DEFAULT KEY</button>
+        <button class="danger-btn" onclick="logout()">LOGOUT</button>
     </section>
 </main>
 
 <script>
-    // YOUR NEW KEY
     const _v = "c2stLW9yLXYxLTllMjQ4MTk5Y2VjNjBiZDk1Mjg2OWNmNzU2Y2M2M2FhNWNiZjhjMzFlODRkMGQxY2QyODk3ZWNjZGQxYjRmMWQ=";
     const getSecret = () => { try { return atob(_v).trim(); } catch(e) { return ""; } };
 
@@ -115,19 +114,16 @@
     let activeConfig = null;
     let activeHistory = [];
 
-    // Login Logic
     function handleLogin(savedUser = null) {
-        const input = document.getElementById('username-input');
-        const user = savedUser || input.value.trim().toLowerCase();
-        
-        if (!user && !savedUser) return;
+        const user = savedUser || document.getElementById('username-input').value.trim().toLowerCase();
+        if (!user) return;
 
         currentUser = user;
         localStorage.setItem('stealth_last_user', user);
         document.getElementById('auth-overlay').style.display = 'none';
         document.getElementById('display-user').innerText = user;
 
-        const raw = localStorage.getItem(`stealth_v3_${user}`);
+        const raw = localStorage.getItem(`stealth_v31_${user}`);
         const data = raw ? JSON.parse(raw) : {
             config: { apiKey: getSecret(), model: 'google/gemini-2.0-flash-lite-preview-02-05:free' },
             history: []
@@ -140,29 +136,35 @@
         document.getElementById('model-input').value = activeConfig.model;
     }
 
-    // Status Checker
     async function checkStatus() {
         const btn = document.getElementById('status-btn');
-        const key = document.getElementById('api-key-input').value;
+        const key = document.getElementById('api-key-input').value.trim();
         btn.innerText = "VERIFYING...";
-        
         try {
             const res = await fetch("https://openrouter.ai/api/v1/auth/key", {
                 method: "GET",
-                headers: { "Authorization": `Bearer ${key.trim()}` }
+                headers: { "Authorization": `Bearer ${key}` }
             });
             const data = await res.json();
             if (data.data) {
-                btn.innerText = `✅ ONLINE ($${data.data.usage.toFixed(2)} USED)`;
-                btn.style.borderColor = "#00ff00";
+                btn.innerText = `✅ ONLINE (USED: $${data.data.usage.toFixed(2)})`;
+                btn.style.color = "#00ff00";
             } else { throw new Error(); }
         } catch (e) {
-            btn.innerText = "❌ KEY INVALID OR NO CREDITS";
-            btn.style.borderColor = "#ff5555";
+            btn.innerText = "❌ KEY INVALID";
+            btn.style.color = "#ff5555";
         }
     }
 
-    // Chat Logic
+    function forceResetKey() {
+        if(confirm("Restore default hardcoded key?")) {
+            activeConfig.apiKey = getSecret();
+            document.getElementById('api-key-input').value = activeConfig.apiKey;
+            saveToStorage();
+            alert("Key Reset.");
+        }
+    }
+
     async function handleSend() {
         const input = document.getElementById('user-input');
         const text = input.value.trim();
@@ -204,7 +206,7 @@
     }
 
     function saveToStorage() {
-        if (currentUser) localStorage.setItem(`stealth_v3_${currentUser}`, JSON.stringify({ config: activeConfig, history: activeHistory }));
+        if (currentUser) localStorage.setItem(`stealth_v31_${currentUser}`, JSON.stringify({ config: activeConfig, history: activeHistory }));
     }
 
     function showTab(name) {
@@ -230,15 +232,14 @@
     }
 
     function saveSettings() {
-        activeConfig.apiKey = document.getElementById('api-key-input').value;
-        activeConfig.model = document.getElementById('model-input').value;
+        activeConfig.apiKey = document.getElementById('api-key-input').value.trim();
+        activeConfig.model = document.getElementById('model-input').value.trim();
         saveToStorage();
-        alert("Config Updated.");
+        alert("Config Saved.");
     }
 
     function logout() { localStorage.removeItem('stealth_last_user'); location.reload(); }
 
-    // Init
     if (currentUser) handleLogin(currentUser);
     document.getElementById('user-input').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
 </script>
