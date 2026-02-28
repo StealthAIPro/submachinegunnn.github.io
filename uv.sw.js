@@ -1,3 +1,6 @@
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
+
 /* This file goes in your ROOT folder */
 importScripts('/uv/uv.bundle.js');
 importScripts('/uv.config.js');
