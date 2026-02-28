@@ -9,14 +9,15 @@ const openrouter = createOpenAI({
 export const config = { runtime: 'edge' };
 
 export default async function handler(req) {
+  // We extract the model from the request, but default to 'openrouter/free'
   const { model, messages } = await req.json();
 
   const result = await streamText({
-    model: openrouter(model || 'openrouter/auto'),
+    model: openrouter(model || 'openrouter/free'),
     messages,
     headers: {
       "HTTP-Referer": process.env.VERCEL_URL || "http://localhost:3000",
-      "X-Title": "Stealth Pro v7",
+      "X-Title": "Stealth Pro Free Tier",
     },
   });
 
