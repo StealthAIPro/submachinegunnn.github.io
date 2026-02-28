@@ -22,12 +22,11 @@
             margin: 0;
             display: flex;
             flex-direction: column;
-            height: 100dvh; /* Dynamic viewport for Safari */
+            height: 100dvh;
             padding-bottom: env(safe-area-inset-bottom);
             overflow: hidden;
         }
 
-        /* --- AUTH OVERLAY --- */
         #auth-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg); z-index: 1000; display: flex;
@@ -64,19 +63,12 @@
         .ai { align-self: flex-start; background: var(--card); border: 1px solid #333; border-bottom-left-radius: 2px; width: 100%; }
 
         .input-wrapper {
-            background: var(--card);
-            padding: 10px;
-            border-radius: 12px;
-            border: 1px solid #333;
-            display: flex;
-            gap: 8px;
-            flex-shrink: 0;
-            margin-bottom: 10px;
+            background: var(--card); padding: 10px; border-radius: 12px; border: 1px solid #333;
+            display: flex; gap: 8px; flex-shrink: 0; margin-bottom: 10px;
         }
         textarea {
             flex: 1; background: transparent; border: none; color: white; 
-            outline: none; font-size: 16px; resize: none; padding: 8px 0;
-            font-family: inherit;
+            outline: none; font-size: 16px; resize: none; padding: 8px 0; font-family: inherit;
         }
 
         .setting-group { background: var(--card); padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 3px solid var(--accent); }
@@ -84,6 +76,7 @@
         input { width: 100%; background: black; border: 1px solid #333; color: white; padding: 10px; border-radius: 6px; outline: none; }
         
         .send-btn { background: var(--accent); color: white; border: none; padding: 0 18px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .status-btn { background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 8px; border-radius: 6px; cursor: pointer; margin-top: 5px; font-size: 11px; width: 100%; }
         .danger-btn { background: #222; color: #ff5555; border: 1px solid #441111; padding: 10px; border-radius: 8px; cursor: pointer; margin-top: 10px; width: 100%; }
     </style>
 </head>
@@ -130,6 +123,7 @@
         <div class="setting-group">
             <label>ACTIVE MODEL ID</label>
             <input type="text" id="model-input">
+            <button class="status-btn" onclick="checkStatus()">🔍 CHECK API STATUS</button>
         </div>
         <button class="send-btn" style="width:100%; height:45px;" onclick="saveSettings()">SAVE CONFIG</button>
         <button class="danger-btn" onclick="logout()">LOGOUT</button>
@@ -137,18 +131,16 @@
 </main>
 
 <script>
-    // Obfuscated Key Decoder
-    const _v = "c2stLW9yLXYxLTdmMWUyNmZmNTRiNTJhMjQwYWU1NjMwMWViYmQ5NjZlODllMzllNTg0MzkyODFkOWU0MWEwY2Q0MmMwZjBmZmQ=";
+    // Updated Key with your new value
+    const _v = "c2stLW9yLXYxLTllMjQ4MTk5Y2VjNjBiZDk1Mjg2OWNmNzU2Y2M2M2FhNWNiZjhjMzFlODRkMGQxY2QyODk3ZWNjZGQxYjRmMWQ=";
     const getSecret = () => atob(_v).replace(/-/g, '');
 
-    // Global State
     let currentUser = localStorage.getItem('stealth_last_user') || null;
     let activeConfig = null;
     let activeHistory = [];
 
     window.onload = () => {
         if (currentUser) handleLogin(currentUser);
-        
         document.getElementById('user-input').addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -160,25 +152,40 @@
     function handleLogin(savedUser = null) {
         const user = savedUser || document.getElementById('username-input').value.trim().toLowerCase();
         if (!user) return;
-        
         currentUser = user;
         localStorage.setItem('stealth_last_user', user);
         document.getElementById('auth-overlay').style.display = 'none';
         document.getElementById('display-user').innerText = user;
-        
-        // Load data or set defaults
         const data = JSON.parse(localStorage.getItem(`stealth_data_${user}`)) || {
             config: { apiKey: getSecret(), model: 'openrouter/free' },
             history: []
         };
-        
         activeConfig = data.config;
         activeHistory = data.history;
-        
         document.getElementById('api-key-input').value = activeConfig.apiKey;
         document.getElementById('model-input').value = activeConfig.model;
-        
-        if (!savedUser) appendMsg('ai', `**Tunnel Established.** Profile: ${user}`);
+    }
+
+    async function checkStatus() {
+        const key = document.getElementById('api-key-input').value;
+        const btn = event.target;
+        btn.innerText = "⏳ VERIFYING...";
+        try {
+            const res = await fetch("https://openrouter.ai/api/v1/auth/key", {
+                method: "GET",
+                headers: { "Authorization": `Bearer ${key}` }
+            });
+            const data = await res.json();
+            if (data.data) {
+                btn.innerText = `✅ ACTIVE (Usage: $${data.data.usage.toFixed(2)})`;
+                btn.style.color = "#00ff00";
+                btn.style.borderColor = "#00ff00";
+            } else { throw new Error(); }
+        } catch {
+            btn.innerText = "❌ INVALID KEY OR NO CONNECTION";
+            btn.style.color = "#ff5555";
+            btn.style.borderColor = "#ff5555";
+        }
     }
 
     function saveToStorage() {
@@ -202,12 +209,7 @@
     async function handleSend() {
         const input = document.getElementById('user-input');
         const text = input.value.trim();
-        
-        if (!text) return;
-        if (!activeConfig || !activeConfig.apiKey) {
-            appendMsg('ai', "❌ **Error:** API key not found in profile.");
-            return;
-        }
+        if (!text || !activeConfig?.apiKey) return;
 
         appendMsg('user', text);
         input.value = '';
@@ -226,9 +228,7 @@
                     messages: [{ role: "user", content: text }] 
                 })
             });
-
             const data = await response.json();
-
             if (data.error) {
                 appendMsg('ai', `❌ **API Error:** ${data.error.message}`);
             } else {
