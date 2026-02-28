@@ -199,6 +199,14 @@
     function saveSettings() { activeConfig.model = document.getElementById('model-input').value.trim(); saveToStorage(); alert("Saved."); }
     function logout() { localStorage.removeItem('stealth_last_user'); location.reload(); }
     if (currentUser) handleLogin(currentUser);
+    // Intercept Enter key for the input field
+    document.getElementById('user-input').addEventListener('keydown', function(e) {
+        // Check if Enter was pressed WITHOUT the Shift key
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault(); // Stop it from adding a new line
+            handleSend();       // Trigger the send function
+        }
+    });
 </script>
 </body>
 </html>
