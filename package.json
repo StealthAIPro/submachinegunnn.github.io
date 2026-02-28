@@ -1,9 +1,11 @@
 {
-  "name": "stealth-pro-v7",
+  "name": "stealth-system",
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
-    "@ai-sdk/openai": "latest",
-    "ai": "latest"
+    "express": "^4.18.2"
   }
 }
