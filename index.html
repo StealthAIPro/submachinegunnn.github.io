@@ -89,13 +89,14 @@
         if(name === 'history') renderHistory();
     }
 
+    // ... (keep the same CSS and HTML structure from previous version)
+
     async function handleSend() {
         const text = inputField.value.trim();
         if (!text) return;
 
         appendMsg('user', text);
         inputField.value = '';
-        inputField.style.height = 'auto';
         const aiBubble = appendEmptyMsg('ai');
         document.getElementById('loading').style.display = 'block';
 
@@ -103,7 +104,11 @@
             const response = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ model: currentModel, messages: [{ role: "user", content: text }] })
+                // Sending 'openrouter/free' to the backend
+                body: JSON.stringify({ 
+                    model: 'openrouter/free', 
+                    messages: [{ role: "user", content: text }] 
+                })
             });
 
             const reader = response.body.getReader();
@@ -113,22 +118,43 @@
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
+            
                 const chunk = decoder.decode(value);
                 const lines = chunk.split('\n');
+            
                 for (const line of lines) {
+                // This is the Vercel AI SDK text prefix
                     if (line.startsWith('0:')) {
-                        let content = line.slice(2).trim();
-                        if (content.startsWith('"') && content.endsWith('"')) content = content.slice(1, -1);
-                        fullText += content.replace(/\\n/g, '\n').replace(/\\"/g, '"');
+                        try {
+                            let content = line.slice(2);
+                            // Clean up quotes if the SDK wrapped the chunk in them
+                            if (content.startsWith('"') && content.endsWith('"')) {
+                                content = content.slice(1, -1);
+                            }
+                            // Handle escaped characters from the stream
+                            fullText += content
+                                .replace(/\\n/g, '\n')
+                                .replace(/\\"/g, '"')
+                                .replace(/\\\\/g, '\\');
+                        } catch (e) {
+                            console.error("Parsing error", e);
+                        }
                     }
                 }
+            // Use innerText to preserve the AI's formatting (newlines, etc)
                 aiBubble.innerText = fullText;
                 document.getElementById('chat-window').scrollTop = document.getElementById('chat-window').scrollHeight;
             }
+        
+        // Save to History
             activeHistory.unshift({ user: text, ai: fullText, time: new Date().toLocaleTimeString() });
             localStorage.setItem('stealth_history', JSON.stringify(activeHistory));
-        } catch (e) { aiBubble.innerText = "Error connecting to AI."; }
-        finally { document.getElementById('loading').style.display = 'none'; }
+
+        } catch (e) {
+            aiBubble.innerText = "⚠️ Free tier busy or offline. Try again in a moment.";
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
     }
 
     function generateImage() {
