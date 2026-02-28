@@ -1,8 +1,8 @@
-/* Top of your uv.sw.js */
+/* Top of uv.sw.js in your ROOT folder */
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
 
-/* Your existing imports below */
+// Now the rest of your imports
 importScripts('/uv/uv.bundle.js');
 importScripts('/uv.config.js');
 importScripts('/uv/uv.sw.js');
